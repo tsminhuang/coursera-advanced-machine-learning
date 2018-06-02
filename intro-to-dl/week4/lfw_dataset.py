@@ -45,7 +45,9 @@ def load_lfw_dataset(
                 photo_number = int(fname_splitted[-1])
                 if (person_id, photo_number) in imgs_with_attrs:
                     all_photos.append(img)
-                    photo_ids.append({'person': person_id, 'imagenum': photo_number})
+                    #photo_ids.append({'person': person_id, 'imagenum': photo_number})
+                    # hack for pandas 0.23
+                    photo_ids.append({'person': person_id, 'imagenum': str(photo_number)})
 
     photo_ids = pd.DataFrame(photo_ids)
     all_photos = np.stack(all_photos).astype('uint8')
