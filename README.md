@@ -8,6 +8,6 @@
 
 4. [Practical Reinforcement Learning](practical-rl)
 
-5. Deep Learning in Computer Vision
+5. [Deep Learning in Computer Vision](dl-in-cv)
 
 6. Natural Language Processing
