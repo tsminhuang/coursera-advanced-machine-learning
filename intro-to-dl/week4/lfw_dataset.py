@@ -3,7 +3,7 @@ import os
 import cv2
 import pandas as pd
 import tarfile
-import tqdm
+import tqdm_utils
 
 
 ATTRS_NAME = "lfw_attributes.txt"  # http://www.cs.columbia.edu/CAVE/databases/pubfig/download/lfw_attributes.txt
@@ -24,7 +24,8 @@ def load_lfw_dataset(
 
     # read attrs
     df_attrs = pd.read_csv(ATTRS_NAME, sep='\t', skiprows=1)
-    df_attrs = pd.DataFrame(df_attrs.iloc[:, :-1].values, columns=df_attrs.columns[1:])
+    df_attrs.columns = list(df_attrs.columns)[1:] + ["NaN"]
+    df_attrs = df_attrs.drop("NaN", axis=1)
     imgs_with_attrs = set(map(tuple, df_attrs[["person", "imagenum"]].values))
 
     # read photos
@@ -32,7 +33,7 @@ def load_lfw_dataset(
     photo_ids = []
 
     with tarfile.open(RAW_IMAGES_NAME if use_raw else IMAGES_NAME) as f:
-        for m in tqdm.tqdm_notebook(f.getmembers()):
+        for m in tqdm_utils.tqdm_notebook_failsafe(f.getmembers()):
             if m.isfile() and m.name.endswith(".jpg"):
                 # prepare image
                 img = decode_image_from_raw_bytes(f.extractfile(m).read())
@@ -45,9 +46,7 @@ def load_lfw_dataset(
                 photo_number = int(fname_splitted[-1])
                 if (person_id, photo_number) in imgs_with_attrs:
                     all_photos.append(img)
-                    #photo_ids.append({'person': person_id, 'imagenum': photo_number})
-                    # hack for pandas 0.23
-                    photo_ids.append({'person': person_id, 'imagenum': str(photo_number)})
+                    photo_ids.append({'person': person_id, 'imagenum': photo_number})
 
     photo_ids = pd.DataFrame(photo_ids)
     all_photos = np.stack(all_photos).astype('uint8')
